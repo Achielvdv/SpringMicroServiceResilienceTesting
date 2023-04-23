@@ -40,7 +40,7 @@ public class Main {
         System.out.println("===================================");
 
         // generate aspects to intercept messages based on channels found in previous step
-        //CommandService.generateMessageCapturingAspects(services);
+        //CommandService.generaaateMessageCapturingAspects(services);
 
         // Inject the generated aspects and execute tests
         CommandService.injectCaptureMessageAspectsAndRunTestsForAllServices(services);
