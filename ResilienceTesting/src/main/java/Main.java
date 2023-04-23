@@ -13,8 +13,8 @@ public class Main {
     private static final String URL_RESILIENCE = Globals.RESILIENCE_URL;
 
     public static void main(String[] args) throws IOException {
-//        Path dir = Paths.get(URL_NORMAL);
-        Path dir = Paths.get(URL_RESILIENCE);
+        Path dir = Paths.get(URL_NORMAL);
+//        Path dir = Paths.get(URL_RESILIENCE);
 
 
         System.out.println("\n=============================================");
@@ -23,7 +23,7 @@ public class Main {
 
         // Discovery of the services and their tests
         List<Service> services = ReadService.findServices(dir);
-        CommandService.runAllTests(services);
+        CommandService.runAllTests(services, dir.toString());
 
         System.out.println("\n=========================");
         System.out.println(" DISCOVER CHANNELS PHASE ");
@@ -43,6 +43,6 @@ public class Main {
         //CommandService.generaaateMessageCapturingAspects(services);
 
         // Inject the generated aspects and execute tests
-        CommandService.injectCaptureMessageAspectsAndRunTestsForAllServices(services);
+        CommandService.injectCaptureMessageAspectsAndRunTestsForAllServices(services, dir.toString());
     }
 }

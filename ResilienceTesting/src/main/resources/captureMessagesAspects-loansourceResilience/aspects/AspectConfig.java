@@ -1,4 +1,4 @@
-package io.pivotal.loancheckResilience.aspects;
+package io.pivotal.loansourceResilience.aspects;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

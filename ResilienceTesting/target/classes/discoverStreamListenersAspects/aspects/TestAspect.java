@@ -1,4 +1,4 @@
-package io.pivotal.loancheck.aspects;
+package io.pivotal.loancheckResilience.aspects;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

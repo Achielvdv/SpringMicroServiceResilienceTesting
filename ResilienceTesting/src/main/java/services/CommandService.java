@@ -14,8 +14,6 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 
 public class CommandService {
-    private static final String URL = Globals.URL;
-
     // General Use
 
     private static void killRunningApplication(String PID) throws IOException {
@@ -33,9 +31,9 @@ public class CommandService {
 
     // Test Discovering Fase
 
-    public static void buildService(Service service) throws IOException {
+    public static void buildService(Service service, String url) throws IOException {
         ProcessBuilder builder = new ProcessBuilder(
-                "cmd.exe", "/c", "cd " + URL + "/" + service.getName() + " && mvn clean install" );
+                "cmd.exe", "/c", "cd " + url + "/" + service.getName() + " && mvn clean install" );
         builder.redirectErrorStream(true);
         Process p = builder.start();
         BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -57,7 +55,6 @@ public class CommandService {
         String line;
         while (true) {
             line = r.readLine();
-//            System.out.println(line);
             if (line == null) {
                 break;
             }
@@ -75,14 +72,14 @@ public class CommandService {
         return new TestResult(returnedTime, buildSucces);
     }
 
-    public static void runTestCases(Service service) throws IOException {
-       buildService(service);
+    public static void runTestCases(Service service, String url) throws IOException {
+       buildService(service, url);
        if (service.getTestClasses().size() != 0) {
            System.out.println("Executing tests..");
            for (TestClass testClass : service.getTestClasses()) {
                System.out.println("Test Class: " + testClass.getName());
                for (TestCase testCase : testClass.getTestCases()) {
-                   String command = "cd " + URL + "/" + service.getName() + " && mvn -Dtest=" + testClass.getName() + "#" + testCase.getName() + " test";
+                   String command = "cd " + url + "/" + service.getName() + " && mvn -Dtest=" + testClass.getName() + "#" + testCase.getName() + " test";
                    System.out.println(" - Test: " + testCase.getName());
                    var testResult = runTest(command);
                    System.out.println("\t Test result: " + testResult.showOutcome());
@@ -93,9 +90,9 @@ public class CommandService {
        }
     }
 
-    public static void runAllTests(List<Service> services) throws IOException {
+    public static void runAllTests(List<Service> services, String url) throws IOException {
         for (Service service : services) {
-            runTestCases(service);
+            runTestCases(service, url);
         }
     }
 
@@ -130,15 +127,15 @@ public class CommandService {
         }
     }
 
-    public static void injectCaptureMessageAspectsAndRunTestsForAllServices(List<Service> services) throws IOException {
+    public static void injectCaptureMessageAspectsAndRunTestsForAllServices(List<Service> services, String url) throws IOException {
         for (Service service : services) {
-            injectCaptureMessageAspectsAndRunTests(service);
+            injectCaptureMessageAspectsAndRunTests(service, url);
         }
     }
 
-    public static void injectCaptureMessageAspectsAndRunTests(Service service) throws IOException {
-            injectAspectIntoService(service, "src/main/resources/captureMessagesAspects-" + service.getName());
-            runTestCases(service);
+    public static void injectCaptureMessageAspectsAndRunTests(Service service, String url) throws IOException {
+            injectAspectIntoService(service, ".\\ResilienceTesting\\src\\main\\resources\\captureMessagesAspects-" + service.getName());
+            runTestCases(service, url);
             removeAspectsFromService(service);
     }
 
@@ -178,12 +175,12 @@ public class CommandService {
         }
     }
 
-    public static void discoverChannels(Service service) throws IOException {
+    public static void discoverChannels(Service service, String url) throws IOException {
         injectAspectIntoService(service, "src/main/resources/discoverChannelsAspects");
 
         System.out.println(service.getName().toUpperCase() + ": discovering channels...");
         ProcessBuilder builder = new ProcessBuilder(
-                "cmd.exe", "/c", "cd " + URL + "/" + service.getName() + " && " + "mvn spring-boot:run -e");
+                "cmd.exe", "/c", "cd " + url + "/" + service.getName() + " && " + "mvn spring-boot:run -e");
         builder.redirectErrorStream(true);
         Process p = builder.start();
         BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -224,12 +221,12 @@ public class CommandService {
         removeAspectsFromService(service);
     }
 
-    public static void discoverStreamListeners(Service service) throws IOException {
+    public static void discoverStreamListeners(Service service, String url) throws IOException {
       //  injectAspectIntoService(service, "src/main/resources/discoverStreamListenersAspects");
 
         System.out.println(service.getName().toUpperCase() + ": discovering StreamListeners...");
         ProcessBuilder builder = new ProcessBuilder(
-                "cmd.exe", "/c", "cd " + URL + "\\" + service.getName() + " && " + "mvn spring-boot:run");
+                "cmd.exe", "/c", "cd " + url + "\\" + service.getName() + " && " + "mvn spring-boot:run");
         builder.redirectErrorStream(true);
         Process p = builder.start();
         BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -260,23 +257,23 @@ public class CommandService {
         }
     }
 
-    public static void discoverStreamListenersForAllServices(List<Service> services) throws IOException {
+    public static void discoverStreamListenersForAllServices(List<Service> services, String url) throws IOException {
         for (Service service : services) {
-            discoverStreamListeners(service);
+            discoverStreamListeners(service, url);
         }
     }
 
-    public static void discoverChannelsForAllServices(List<Service> services) throws IOException {
+    public static void discoverChannelsForAllServices(List<Service> services, String url) throws IOException {
         for (Service service : services) {
-            discoverChannels(service);
+            discoverChannels(service, url);
         }
     }
 
-    public static void discoverStreamListenersTest(List<Service> services) throws IOException {
+    public static void discoverStreamListenersTest(List<Service> services, String url) throws IOException {
         for (Service service : services) {
                 new Thread(() -> {
                     try {
-                        discoverStreamListeners(service);
+                        discoverStreamListeners(service, url);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -296,7 +293,7 @@ public class CommandService {
     }
 
     public static void generateAllMessageCapturingAspectsForService(Service service) throws IOException {
-        String path = "./src/main/resources/captureMessagesAspects-" + service.getName() + "/aspects";
+        String path = "./src/main/resources/captureMessagesAspects-" + service.getName() + "/captureMessagesAspects-loancheckResilience/aspects";
 
         Path directory =  Paths.get(path);
         Files.createDirectories(directory);
@@ -312,7 +309,7 @@ public class CommandService {
     }
 
     public static void generateSomeMessageCaptureAspectsForService(Service service) throws IOException {
-        String path = "./src/main/resources/captureMessagesAspects-" + service.getName() + "/aspects";
+        String path = "./src/main/resources/captureMessagesAspects-" + service.getName() + "/captureMessagesAspects-loancheckResilience/aspects";
         Path directory =  Paths.get(path);
         Files.createDirectories(directory);
 
@@ -326,7 +323,7 @@ public class CommandService {
     }
 
     public static void generateAspectConfig(Service service) throws IOException {
-        String path = "./src/main/resources/captureMessagesAspects-" + service.getName() + "/aspects";
+        String path = "./src/main/resources/captureMessagesAspects-" + service.getName() + "/captureMessagesAspects-loancheckResilience/aspects";
 
         File file = new File(path + "/AspectConfig.java");
         Files.writeString(Path.of(file.getPath()), "package io.pivotal.loancheck.aspects;" + System.lineSeparator() + System.lineSeparator(), CREATE); // TODO change to service base path
